@@ -102,16 +102,31 @@ static alloc_status _mem_invalidate_gap_ix(pool_mgr_pt pool_mgr);
 /****************************************/
 alloc_status mem_init() {
     // ensure that it's called only once until mem_free
-    if (pool_store_capacity == 0)
-//    if (pool_store == NULL)
+//    if (pool_store_capacity == 0)
+    if (pool_store == NULL)
     {
-        // THIS IS A GOOD WAY TO DETERMINE IF mem_init() HAS NOT YET BEEN CALLED?
-
         // allocate the pool store with initial capacity
-        // note: holds pointers only, other functions to allocate/deallocate
         pool_store_capacity = MEM_POOL_STORE_INIT_CAPACITY;
 
-        // THIS REALLY NEEDS TO ALLOCATE THE POOL STORE
+        // note: holds pointers only, other functions to allocate/deallocate
+        // NOT SURE IF THIS IS THE CORRECT WAY TO ALLOCATE THIS ARRAY?
+        pool_store = (pool_mgr_pt*) malloc(MEM_POOL_STORE_INIT_CAPACITY * sizeof(pool_mgr_pt*));
+
+/*
+ * Pool (manager) store (library static)
+ *
+ * This is an array of pointers to pool_mgr_t structures and so holds the metadata for multiple pools.
+ * See the corresponding static variables and functions.
+ *
+ * Behavior & management:
+ *
+ * The array is initialized with a certain capacity. If necessary, it should be resized with realloc().
+ * See the corresponding static function and constants in the source file.
+ * Since this array contains pointers, they can be NULL. The size of the array, for which a static variable is used,
+ * should be incremented when a new pool is opened and never decremented.
+ * The pointer to a new pool should always be added to the end of the array.
+ * When a pool is closed, the pointer should be set to NULL.
+ */
 
         return ALLOC_OK;
     }
@@ -125,15 +140,14 @@ alloc_status mem_init() {
 
 alloc_status mem_free() {
     // ensure that it's called only once for each mem_init
-    if (pool_store_capacity != 0)
-//    if (pool_store == NULL)
+    if (pool_store != NULL)
     {
-        // THIS IS A GOOD WAY TO DETERMINE IF mem_init() HAS NOT YET BEEN CALLED?
-
         // make sure all pool managers have been deallocated
         // can free the pool store array
+        free(pool_store);
         // update static variables
         pool_store_capacity = 0;
+        pool_store = NULL;
 
         return ALLOC_OK;
     }
