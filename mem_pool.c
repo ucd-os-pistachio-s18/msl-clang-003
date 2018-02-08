@@ -208,6 +208,7 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy)
 
         //   link pool mgr to pool store
         pool_store[pool_store_size] = new_pool_mgr_pt;
+        ++pool_store_size;
 
         // return the address of the mgr, cast to (pool_pt)
         return (pool_pt) new_pool_mgr_pt;
@@ -219,19 +220,44 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy)
 alloc_status mem_pool_close(pool_pt pool)
 {
     // get mgr from pool by casting the pointer to (pool_mgr_pt)
+    pool_mgr_pt current_pool_mgr_pt = (pool_mgr_pt) pool;
+
     // check if this pool is allocated
+    if (!(pool->mem))
+        return ALLOC_NOT_FREED;
+
     // check if pool has only one gap
+    if (pool->num_gaps != 1)
+        return ALLOC_NOT_FREED;
+
     // check if it has zero allocations
+    if (pool->num_allocs != 0)
+        return ALLOC_NOT_FREED;
+
     // free memory pool
+    free(pool->mem);
     // free node heap
+    free(current_pool_mgr_pt->node_heap);
     // free gap index
+    free(current_pool_mgr_pt->gap_ix);
+
     // find mgr in pool store and set to null
+    for (int index = 0; index < pool_store_size; ++index)
+    {
+        if (pool_store[index] == current_pool_mgr_pt)
+        {
+            pool_store[index] = NULL;
+            break;
+        }
+    }
+
     // note: don't decrement pool_store_size, because it only grows
     // free mgr
+    free(current_pool_mgr_pt);
 
     return ALLOC_OK;
-//    return ALLOC_FAIL;
 }
+
 
 void * mem_new_alloc(pool_pt pool, size_t size) {
     // get mgr from pool by casting the pointer to (pool_mgr_pt)
@@ -257,7 +283,9 @@ void * mem_new_alloc(pool_pt pool, size_t size) {
     //   check if successful
     // return allocation record by casting the node to (alloc_pt)
 
-    return NULL;
+    // TEMPORARY VALUE:
+    return (alloc_pt*) pool;
+//    return NULL;
 }
 
 alloc_status mem_del_alloc(pool_pt pool, void * alloc) {
