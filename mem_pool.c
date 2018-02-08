@@ -100,7 +100,8 @@ static alloc_status _mem_invalidate_gap_ix(pool_mgr_pt pool_mgr);
 /* Definitions of user-facing functions */
 /*                                      */
 /****************************************/
-alloc_status mem_init() {
+alloc_status mem_init()
+{
     // ensure that it's called only once until mem_free
     if (!pool_store)
     {
@@ -114,7 +115,8 @@ alloc_status mem_init() {
 }
 
 
-alloc_status mem_free() {
+alloc_status mem_free()
+{
     // ensure that it's called only once for each mem_init
     if (pool_store)
     {
@@ -132,7 +134,8 @@ alloc_status mem_free() {
 }
 
 
-pool_pt mem_pool_open(size_t size, alloc_policy policy) {
+pool_pt mem_pool_open(size_t size, alloc_policy policy)
+{
     // make sure there the pool store is allocated
     if (pool_store)
     {
@@ -181,6 +184,7 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy) {
 
         // assign all the pointers and update meta data:
         //   initialize top node of node heap
+        // NOTE: MORE INITIALIZATION IS PROBABLY NEEDED
         new_node_pt->used = 0;
         new_node_pt->allocated = 0;
 
@@ -209,21 +213,11 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy) {
         return (pool_pt) new_pool_mgr_pt;
     }
     else return NULL;
-
-// THE FOLLOWING ASSERTS WILL BE CHECKED UPON RETURN FROM THIS FUNCTION:
-/*
-        assert_non_null(pool);
-        assert_non_null(pool->mem);
-        assert_int_equal(pool->policy, POOL_POLICY);
-        assert_int_equal(pool->total_size, pool_size);
-        assert_int_equal(pool->alloc_size, 0);
-        assert_int_equal(pool->num_allocs, 0);
-        assert_int_equal(pool->num_gaps, 1);
- */
 }
 
 
-alloc_status mem_pool_close(pool_pt pool) {
+alloc_status mem_pool_close(pool_pt pool)
+{
     // get mgr from pool by casting the pointer to (pool_mgr_pt)
     // check if this pool is allocated
     // check if pool has only one gap
@@ -235,7 +229,8 @@ alloc_status mem_pool_close(pool_pt pool) {
     // note: don't decrement pool_store_size, because it only grows
     // free mgr
 
-    return ALLOC_FAIL;
+    return ALLOC_OK;
+//    return ALLOC_FAIL;
 }
 
 void * mem_new_alloc(pool_pt pool, size_t size) {
