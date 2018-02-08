@@ -162,35 +162,37 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy)
         }
 
         // allocate a new node heap
-        node_pt new_node_pt = (node_pt) malloc(sizeof(node_t));
+        node_pt new_node_heap_pt = (node_pt) calloc(MEM_NODE_HEAP_INIT_CAPACITY, sizeof(node_t));
         // check success, on error deallocate mgr/pool and return null
-        if (!new_node_pt)
+        if (!new_node_heap_pt)
         {
             free(new_pool_mgr_pt->pool.mem);
             free(new_pool_mgr_pt);
             return NULL;
         }
+        new_pool_mgr_pt->node_heap = new_node_heap_pt;
 
         // allocate a new gap index
-        gap_pt new_gap_ix_pt = (gap_pt) malloc(MEM_GAP_IX_INIT_CAPACITY * sizeof(gap_pt));
+        gap_pt new_gap_ix_pt = (gap_pt) calloc(MEM_GAP_IX_INIT_CAPACITY, sizeof(gap_pt));
         // check success, on error deallocate mgr/pool/heap and return null
         if (!new_gap_ix_pt)
         {
             free(new_pool_mgr_pt->pool.mem);
             free(new_pool_mgr_pt);
-            free(new_node_pt);
+            free(new_node_heap_pt);
             return NULL;
         }
+        new_pool_mgr_pt->gap_ix = new_gap_ix_pt;
 
         // assign all the pointers and update meta data:
         //   initialize top node of node heap
         // NOTE: MORE INITIALIZATION IS PROBABLY NEEDED
-        new_node_pt->used = 0;
-        new_node_pt->allocated = 0;
+        new_node_heap_pt->used = 1;
+        new_node_heap_pt->allocated = 0;
 
         //   initialize top node of gap index
-        new_gap_ix_pt->size = 1;
-        new_gap_ix_pt->node = new_node_pt;
+        new_gap_ix_pt->size = 0;
+        _mem_add_to_gap_ix(new_pool_mgr_pt,size,new_node_heap_pt);
 
         //   initialize pool mgr
         new_pool_mgr_pt->pool.alloc_size = 0;
@@ -201,10 +203,9 @@ pool_pt mem_pool_open(size_t size, alloc_policy policy)
 
         new_pool_mgr_pt->total_nodes = 1;
         new_pool_mgr_pt->used_nodes = 0;
-        new_pool_mgr_pt->node_heap = new_node_pt;
 
         new_pool_mgr_pt->gap_ix_capacity = MEM_GAP_IX_INIT_CAPACITY;
-        new_pool_mgr_pt->gap_ix = new_gap_ix_pt;
+
 
         //   link pool mgr to pool store
         pool_store[pool_store_size] = new_pool_mgr_pt;
@@ -269,6 +270,9 @@ void * mem_new_alloc(pool_pt pool, size_t size) {
     // if BEST_FIT, then find the first sufficient node in the gap index
     // check if node found
     // update metadata (num_allocs, alloc_size)
+    pool->num_allocs += 1;
+    pool->alloc_size += size;
+
     // calculate the size of the remaining gap, if any
     // remove node from gap index
     // convert gap_node to an allocation node of given size
@@ -386,7 +390,8 @@ static alloc_status _mem_resize_node_heap(pool_mgr_pt pool_mgr) {
 static alloc_status _mem_resize_gap_ix(pool_mgr_pt pool_mgr) {
     // see above
 
-    return ALLOC_FAIL;
+    return ALLOC_OK;
+//    return ALLOC_FAIL;
 }
 
 /*
@@ -450,7 +455,8 @@ static alloc_status _mem_sort_gap_ix(pool_mgr_pt pool_mgr) {
     //    node with a lower address of pool allocation address (mem)
     //       swap them (by copying) (remember to use a temporary variable)
 
-    return ALLOC_FAIL;
+    return ALLOC_OK;
+//    return ALLOC_FAIL;
 }
 
 static alloc_status _mem_invalidate_gap_ix(pool_mgr_pt pool_mgr) {
