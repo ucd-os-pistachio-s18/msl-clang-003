@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h> // for perror()
+#include <memory.h>
 
 #include "mem_pool.h"
 
@@ -279,9 +280,17 @@ void * mem_new_alloc(pool_pt pool, size_t size) {
     // get a node for allocation:
     node_pt new_node_pt = (node_pt) malloc(sizeof(node_t));
 
-    // if FIRST_FIT, then find the first sufficient node in the node heap
-    // if BEST_FIT, then find the first sufficient node in the gap index
-    // DO STRCMP ON "FIRST_FIT"
+    assert((pool->policy == FIRST_FIT) || (pool->policy == BEST_FIT));
+    if (pool->policy == FIRST_FIT)
+    {
+        // if FIRST_FIT, then find the first sufficient node in the node heap
+
+    }
+    else
+    {
+        // if BEST_FIT, then find the first sufficient node in the gap index
+
+    }
 
     // check if node found
     // update metadata (num_allocs, alloc_size)
