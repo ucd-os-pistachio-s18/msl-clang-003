@@ -2400,9 +2400,9 @@ int run_test_suite() {
     const struct CMUnitTest tests[] = {
             // General tests
             cmocka_unit_test(test_pool_store_smoketest),
-//            cmocka_unit_test(test_pool_smoketest),
+            cmocka_unit_test(test_pool_smoketest),
 
-//            cmocka_unit_test(test_pool_nonempty),
+            cmocka_unit_test(test_pool_nonempty),
 
 //            cmocka_unit_test_setup_teardown(test_pool_ff_metadata, pool_ff_setup, pool_ff_teardown),
 //            cmocka_unit_test_setup_teardown(test_pool_bf_metadata, pool_bf_setup, pool_bf_teardown),
