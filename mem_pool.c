@@ -277,6 +277,8 @@ void * mem_new_alloc(pool_pt pool, size_t size) {
         return NULL;
 
     // get a node for allocation:
+    node_pt new_node_pt = (node_pt) malloc(sizeof(node_t));
+
     // if FIRST_FIT, then find the first sufficient node in the node heap
     // if BEST_FIT, then find the first sufficient node in the gap index
     // check if node found
@@ -287,6 +289,7 @@ void * mem_new_alloc(pool_pt pool, size_t size) {
     // calculate the size of the remaining gap, if any
     // remove node from gap index
     // convert gap_node to an allocation node of given size
+
     // adjust node heap:
     //   if remaining gap, need a new node
     //   find an unused one in the node heap
